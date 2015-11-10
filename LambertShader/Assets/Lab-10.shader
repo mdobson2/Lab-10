@@ -47,10 +47,11 @@
 				//lightDirection = normalize(_WorldSpaceLightPos0.xyz);
 				
 				
-				float3 normalDirection = normalize(mul(float4(input.vertexNormal,0.0), _World2Object).xyz);
+				toReturn.normalDirection = normalize(mul(float4(input.vertexNormal,0.0), _World2Object).xyz);
 				//float3 diffuseReflection = attenuation * _LightColor0.xyz * max(0.0, dot(normalDirection, lightDirection));
 				//float3 specularReflection = reflect(-lightDirection, normalDirection);
 				//float3 viewDirection = normalize(float3(float4(_WorldSpaceCameraPos.xyz, 1.0) - mul(_Object2World, input.vertexPos).xyz));
+				toReturn.pixelWorldPos = (_WorldSpaceCameraPos.xyz, 1.0);
 				
 				//specularReflection = dot(specularReflection, viewDirection);
 				//specularReflection = max(0.0, specularReflection);
@@ -76,18 +77,18 @@
 				lightDirection = normalize(_WorldSpaceLightPos0.xyz);
 			
 				//float3 normalDirection = normalize(mul(float4(input.vertexNormal,0.0), _World2Object).xyz);
-				float3 diffuseReflection = attenuation * _LightColor0.xyz * max(0.0, dot(normalDirection, lightDirection));
-				float3 specularReflection = reflect(-lightDirection, normalDirection);
-				float3 viewDirection = normalize(float3(float4(_WorldSpaceCameraPos.xyz, 1.0) - mul(_Object2World, input.vertexPos).xyz));
+				float3 diffuseReflection = attenuation * _LightColor0.xyz * max(0.0, dot(input.normalDirection, lightDirection));
+				float3 specularReflection = reflect(-lightDirection, input.normalDirection);
+				//float3 viewDirection = normalize(float3(float4(_WorldSpaceCameraPos.xyz, 1.0) - mul(_Object2World, input.vertexPos).xyz));
 			
-				specularReflection = dot(specularReflection, viewDirection);
+				specularReflection = dot(specularReflection, input.pixelWorldPos);
 				specularReflection = max(0.0, specularReflection);
 				specularReflection = pow(max(0.0, specularReflection), _Shininess);
-				specularReflection = max(0.0, dot(normalDirection, lightDirection)) * specularReflection;
+				specularReflection = max(0.0, dot(input.normalDirection, lightDirection)) * specularReflection;
 				
 				float3 finalLight = specularReflection + diffuseReflection + UNITY_LIGHTMODEL_AMBIENT;
 			
-				input.pixelCol = float4(viewDirection, 1.0);
+				//input.pixelCol = float4(input.pixelWorldPos, 1.0);
 				input.pixelCol = float4(specularReflection, 1.0);
 				input.pixelCol = float4(finalLight * _Color, 1.0);
 				return input.pixelCol;
